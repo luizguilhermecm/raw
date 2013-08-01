@@ -8,7 +8,7 @@ require "koala"
 #cops_uel_url = 'http://www.cops.uel.br/vestibular/2009/RESULTADO/2A_FASE/7/GERAL.TXT'
 
 def FacebookGraph
-        @graph = Koala::Facebook::API.new("CAACEdEose0cBAKq6VxoQDu2omejp4tPUVhhZC5mOXWktezU8ZASX9ZCieBnYiKGqimIqv35VylCX7ulyG4jbDN9jmobZCUUULLYK3LPqSDZCAn8HM3yYzTs0EjlLJV1hasgp4WjriBwL1UJaJZBDgNKqBny60HqtDaQ3h2z5RYPwZDZD")
+        @graph = Koala::Facebook::API.new("CAABZCOeqexSEBAMVcbsqtnjKvkhUC1Thacza8lMoyl20l1FZBdtgs85PdyPBTFLQuUD9FZA5WSXyGM9YWYeHCNy1MX7BNZAHrwYzfTsLKt4CpFvgZBMN1Vy3CSa9Udh9wTpWRjkj70HW0mIm2uuWzXEbcCURNJ3MZD")
         @hash_uel.each do |key, value|
                 puts "--------------------------------"
                 puts "#{key}"
@@ -20,6 +20,8 @@ def FacebookGraph
                                 puts "\t\t => #{nome}"
                                 if nome.length < 3
                                         puts "\t\t\t => #{nome}"
+                                        saved_index = index
+                                elsif nome.length == 3 && nome == "DOS"
                                         saved_index = index
                                 end
                         end
@@ -33,6 +35,8 @@ def FacebookGraph
                                 url = 'https://www.facebook.com/' + user["id"].to_s
                                 if SearchIntoProfile(url)
                                         puts "\t\t => #{i} => #{url}"
+                                else 
+                                        print " *"
                                 end
                         end
                         puts "\n"
@@ -47,13 +51,13 @@ def FacebookGraph
                                         if SearchIntoProfile(url)
                                                 puts "\t\t => #{searching} => #{url}"
                                         else
-                                                puts "\t\t -"
+                                                print " *"
                                         end
                                 end
                         end
                 puts "------"
+                puts "------"
                 end
-                break
         end
 end
 
@@ -61,7 +65,7 @@ def SearchIntoProfile(url)
         fb = FacebookConnect()
         page = fb.get(url)
         nok = page.parser.to_s
-        if nok[/Universidade Estadual de Londrina/]
+        if nok[/Londrina/]
                 return true
         else
                 return false
