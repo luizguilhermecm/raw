@@ -1,69 +1,69 @@
-require 'mechanize'
 
 require 'nokogiri'
 require 'open-uri'
 
-cops_uel_url = 'http://www.cops.uel.br/vestibular/2009/RESULTADO/2A_FASE/7/GERAL.TXT'
+@hash_uel = {}
 
-#agent = Mechanize.new
+def GetNames(page_url)
 
-#cops_uel = agent.get(cops_uel_url)
+        cops_uel_page = Nokogiri::HTML(open(page_url))
 
-#puts cops_uel.css("a")
+        cops_uel_page.encoding = 'utf-8'
 
-cops_uel_page = Nokogiri::HTML(open(cops_uel_url))
+        cops_uel_text = cops_uel_page.text
 
-cops_uel_page.encoding = 'utf-8'
+        aux = cops_uel_text.gsub(/[^a-zA-Z\s\/]/,"")
 
-cops_uel_text = cops_uel_page.text
+        aux = aux.gsub(/NOME DO CANDIDATO/, "")
+        aux = aux.gsub(/INSC/, "")
+        aux = aux.gsub(/\r/, "")
 
-aux = cops_uel_text.gsub(/[^a-zA-Z\s\/]/,"")
+        aux = aux.squeeze(" ")
+        vet = aux.split("\n")
 
-aux = aux.gsub(/NOME DO CANDIDATO/, "")
-aux = aux.gsub(/INSC/, "")
-aux = aux.gsub(/\r/, "")
+        vet.each_with_index do |del, index|
+                if del[/UNIVERSIDADE ESTADUAL DE LONDRINA/]
+                        vet.delete_at(index)
 
-aux = aux.squeeze(" ")
-vet = aux.split("\n")
+                elsif del[/SELETIVOS/]
+                        vet.delete_at(index)
 
-vet.each_with_index do |del, index|
-        if del[/UNIVERSIDADE ESTADUAL DE LONDRINA/]
-                vet.delete_at(index)
-        
-        elsif del[/SELETIVgOS/]
-                vet.delete_at(index)
-        
-        elsif del[/PROCESSO SELETIVO VESTIBULAR/]
-                vet.delete_at(index)
-                break;
+                elsif del[/PROCESSO SELETIVO VESTIBULAR/]
+                        vet.delete_at(index)
+                        break;
+                end
         end
-end
-vet.delete_at(0)
-vet.delete_at(1)
+        vet.delete_at(0)
+        vet.delete_at(1)
 
-hash_uel = {}
-current_key = "snk"
+        current_key = "snk"
 
-vet.each_with_index do |x, index|
-        if x[0] != " " && x.length > 5
-                current_key = vet[index]
-                hash_uel[current_key] = []
-        end
-        if x.length > 10 
-                if x != current_key
-                        hash_uel[current_key] << x.lstrip
+        vet.each_with_index do |x, index|
+                if x[0] != " " && x.length > 5
+                        current_key = vet[index]
+                        @hash_uel[current_key] = []
+                end
+                if x.length > 10 
+                        if x != current_key
+                                @hash_uel[current_key] << x.lstrip
+                        end
                 end
         end
 end
 
-#puts hash_uel
-#
-#hash_uel.each do |key, value|
-#        puts "----------------------------------------------"
-#        puts "#{key}"
-#        value.each do |i|
-#                puts "=> #{i}"
-#        end
-#        puts "----------------------------------------------"
-#end
+def PrintHash (hash_to_print)
+        hash_to_print.each do |key, value|
+                puts "----------------------------------------------"
+                puts "#{key}"
+                value.each do |i|
+                        puts "=> #{i}"
+                end
+                puts "----------------------------------------------"
+        end
+end
 
+
+cops_uel_url = 'http://www.cops.uel.br/vestibular/2009/RESULTADO/2A_FASE/7/GERAL.TXT'
+
+GetNames(cops_uel_url)
+PrintHash(@hash_uel)
