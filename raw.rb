@@ -30,7 +30,7 @@ vet.each_with_index do |del, index|
         if del[/UNIVERSIDADE ESTADUAL DE LONDRINA/]
                 vet.delete_at(index)
         
-        elsif del[/SELETIVOS/]
+        elsif del[/SELETIVgOS/]
                 vet.delete_at(index)
         
         elsif del[/PROCESSO SELETIVO VESTIBULAR/]
