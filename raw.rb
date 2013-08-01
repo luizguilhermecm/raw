@@ -1,8 +1,84 @@
-
+require 'mechanize'
 require 'nokogiri'
 require 'open-uri'
+require "koala"
 
 @hash_uel = {}
+
+#cops_uel_url = 'http://www.cops.uel.br/vestibular/2009/RESULTADO/2A_FASE/7/GERAL.TXT'
+
+def FacebookGraph
+        @graph = Koala::Facebook::API.new("CAACEdEose0cBAKq6VxoQDu2omejp4tPUVhhZC5mOXWktezU8ZASX9ZCieBnYiKGqimIqv35VylCX7ulyG4jbDN9jmobZCUUULLYK3LPqSDZCAn8HM3yYzTs0EjlLJV1hasgp4WjriBwL1UJaJZBDgNKqBny60HqtDaQ3h2z5RYPwZDZD")
+        @hash_uel.each do |key, value|
+                puts "--------------------------------"
+                puts "#{key}"
+                value.each do |i|
+                        puts "\t => #{i} => checking"
+                        names = i.split(" ")
+                        saved_index = -1
+                        names.each_with_index do |nome, index|
+                                puts "\t\t => #{nome}"
+                                if nome.length < 3
+                                        puts "\t\t\t => #{nome}"
+                                        saved_index = index
+                                end
+                        end
+                        if saved_index >= 0
+                                names.delete_at(saved_index)
+                                puts "\t\t => #{names} => name changed"
+                        end 
+
+                        target = @graph.search(i, {:type => "user"})
+                        target.each do |user|
+                                url = 'https://www.facebook.com/' + user["id"].to_s
+                                if SearchIntoProfile(url)
+                                        puts "\t\t => #{i} => #{url}"
+                                end
+                        end
+                        puts "\n"
+                        puts "\t\t --> permuting names"
+                        for count in 1..names.size-1
+                                puts "\t\t\t => #{names[0]} #{names[count]}"
+                                searching = names[0] + names[count]
+
+                                target = @graph.search(searching, {:type => "user"})
+                                target.each do |user|
+                                        url = 'https://www.facebook.com/' + user["id"].to_s
+                                        if SearchIntoProfile(url)
+                                                puts "\t\t => #{searching} => #{url}"
+                                        else
+                                                puts "\t\t -"
+                                        end
+                                end
+                        end
+                puts "------"
+                end
+                break
+        end
+end
+
+def SearchIntoProfile(url)
+        fb = FacebookConnect()
+        page = fb.get(url)
+        nok = page.parser.to_s
+        if nok[/Universidade Estadual de Londrina/]
+                return true
+        else
+                return false
+        end
+        return false
+end
+
+def FacebookConnect
+        agent = Mechanize.new
+        page = agent.get('https://www.facebook.com/wesleiguerra')
+        google_form = page.form_with(:id => 'login_form')
+        google_form.email = 'luizgui23@hotmail.com'
+        google_form.pass = 'raw_stalk'
+        page = agent.submit(google_form)
+        return agent
+end
+
 
 def GetNames(page_url)
 
@@ -82,28 +158,28 @@ end
 
 def GetByYear (ano)
 
-url_base_ini = 'http://www.cops.uel.br/vestibular/'
+        url_base_ini = 'http://www.cops.uel.br/vestibular/'
+        url_base_meio = '/RESULTADO/2A_FASE/'
+        url_base_fim = '/GERAL.TXT'
 
-url_base_meio = '/RESULTADO/2A_FASE/'
+        goal = url_base_ini + ano.to_s + url_base_meio
 
-url_base_fim = '/GERAL.TXT'
-
-goal = url_base_ini + ano.to_s + url_base_meio
-
-for i in 1..20
-        aux = goal + i.to_s + url_base_fim
-        begin
-                page = Nokogiri::HTML(open(aux))
-                GetNames(aux)                
-        rescue
-
+        for i in 1..20
+                aux = goal + i.to_s + url_base_fim
+                begin
+                        page = Nokogiri::HTML(open(aux))
+                        GetNames(aux)                
+                rescue
+                end
         end
 end
 
-end
+#GetByYear(ARGV.first)
+#GetHashSize(@hash_uel)
+#PrintHash(@hash_uel)
 
-cops_uel_url = 'http://www.cops.uel.br/vestibular/2009/RESULTADO/2A_FASE/7/GERAL.TXT'
+#FacebookConnect()
+GetByYear(2010)
+FacebookGraph()
 
-GetByYear(ARGV.first)
-GetHashSize(@hash_uel)
-PrintHash(@hash_uel)
+
